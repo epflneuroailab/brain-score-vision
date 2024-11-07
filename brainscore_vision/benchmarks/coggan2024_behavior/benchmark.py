@@ -1,12 +1,10 @@
 # Created by David Coggan on 2024 06 25
 
 import numpy as np
-from brainio.assemblies import DataAssembly, BehavioralAssembly
-from brainscore_vision import load_stimulus_set, load_dataset
+from brainscore_vision import load_stimulus_set, load_dataset, load_metric
 from brainscore_vision.benchmarks import BenchmarkBase
 from brainscore_vision.benchmark_helpers.screen import place_on_screen
 from brainscore_core.metrics import Score
-from brainscore_vision.metric_helpers import Defaults as XarrayDefaults
 from brainscore_vision.model_interface import BrainModel
 from brainscore_vision.utils import LazyLoad
 from scipy.stats import sem
@@ -21,8 +19,262 @@ BIBTEX = """@article {
     url = {},
     journal = {in prep}}"""
 
-class Coggan2024_behavior_ConditionWiseAccuracySimilarity(BenchmarkBase):
 
+class Coggan2024_behavior_ConditionWiseLabelingAccuracySimilarity(BenchmarkBase):
+    def __init__(self):
+        self._metric = load_metric('accuracy_distance')
+        self._assembly = LazyLoad(lambda: load_dataset('Coggan2024_behavior'))
+        self._assembly['truth'] = self._assembly['object_class']  # the assembly is missing a 'truth' column which is
+                                                                  #  required by the labeling task
+        self._visual_degrees = 10
+        self._number_of_trials = 1
+        super(Coggan2024_behavior_ConditionWiseLabelingAccuracySimilarity, self).__init__(
+            identifier='tong.Coggan2024_behavior-LabelingConditionWiseAccuracySimilarity',
+            version=1,
+            ceiling_func=lambda: self._metric.leave_one_out_ceiling(
+                self._assembly,
+                variables=['occluder_type', 'visibility', 'occluder_color'],
+                chance_level=1/8),
+            parent='behavior',
+            bibtex=BIBTEX,
+        )
+
+    def __call__(self, candidate: BrainModel):
+        choice_labels = set(self._assembly['object_class'].values)
+        choice_labels = list(sorted(choice_labels))
+        candidate.start_task(BrainModel.Task.label, choice_labels)
+        stimulus_set = place_on_screen(self._assembly.stimulus_set,
+                                       target_visual_degrees=candidate.visual_degrees(),
+                                       source_visual_degrees=self._visual_degrees)
+        labels = candidate.look_at(stimulus_set, number_of_trials=self._number_of_trials)
+        raw_score = self._metric(labels, self._assembly, variables=['occluder_type', 'visibility', 'occluder_color'],
+                                 chance_level=1/8)
+        ceiling = self.ceiling
+        score = raw_score / ceiling
+        score.attrs['raw'] = raw_score
+        score.attrs['ceiling'] = ceiling
+        return score
+
+
+class Coggan2024_behavior_ConditionWiseProbabilitiesAccuracySimilarity(BenchmarkBase):
+    def __init__(self):
+        self._metric = load_metric('accuracy_distance')
+        self._fitting_stimuli = load_stimulus_set('Coggan2024_behavior_fitting')  # this fails is wrapped by LazyLoad
+        self._assembly = LazyLoad(lambda: load_dataset('Coggan2024_behavior'))
+        self._assembly['truth'] = self._assembly['object_class']  # the assembly is missing a 'truth' column which is
+                                                                  #  required by the labeling task
+        self._visual_degrees = 10
+        self._number_of_trials = 1
+        super(Coggan2024_behavior_ConditionWiseProbabilitiesAccuracySimilarity, self).__init__(
+            identifier='tong.Coggan2024_behavior-LabelingConditionWiseAccuracySimilarity',
+            version=1,
+            ceiling_func=lambda: self._metric.ceiling(
+                self._assembly,
+                variables=['occluder_type', 'visibility', 'occluder_color'],
+                chance_level=1/8
+            ),
+            parent='behavior',
+            bibtex=BIBTEX,
+        )
+
+    def __call__(self, candidate: BrainModel):
+        fitting_stimuli = place_on_screen(
+            self._fitting_stimuli,
+            target_visual_degrees=candidate.visual_degrees(),
+            source_visual_degrees=self._visual_degrees)
+        candidate.start_task(BrainModel.Task.probabilities, fitting_stimuli)
+        stimulus_set = place_on_screen(self._assembly.stimulus_set,
+                                       target_visual_degrees=candidate.visual_degrees(),
+                                       source_visual_degrees=self._visual_degrees)
+        probabilities = candidate.look_at(stimulus_set, number_of_trials=self._number_of_trials)
+        labels = [probabilities.choice[c].values for c in probabilities.argmax(axis=1)]
+        raw_score = self._metric(labels, self._assembly, variables=['occluder_type', 'visibility', 'occluder_color'],
+                                 chance_level=1/8)
+        ceiling = self.ceiling
+        score = raw_score / ceiling
+        score.attrs['raw'] = raw_score
+        score.attrs['ceiling'] = ceiling
+        return score
+
+
+class Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy(BenchmarkBase):
+    # TODO: this should be a benchmark base that the others should call
+    def __init__(self, visibility='all', occluder_type='all'):
+        self.visibility = visibility
+        self.occluder_type = occluder_type
+        self._metric = load_metric('accuracy')
+        self._ceiling_func = lambda assembly: get_noise_ceiling(assembly)
+        #self._assembly = load_dataset('Coggan2024_behavior')
+        self._stimulus_set = load_dataset('Coggan2024_behavior').stimulus_set
+        super(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy, self).__init__(
+            identifier='tong.Coggan2024_behavior-LabelingConditionWiseEngineeringAccuracy',
+            version=1,
+            ceiling_func=lambda: Score(1),
+            parent='Coggan2024-top1',
+            bibtex=BIBTEX,
+        )
+
+    def __call__(self, candidate: BrainModel):
+        self.filter_occluders()
+        choice_labels = set(self._stimulus_set['object_class'].values)
+        choice_labels = list(sorted(choice_labels))
+        candidate.start_task(BrainModel.Task.label, choice_labels)
+        labels = candidate.look_at(self._stimulus_set)
+        raw_score = self._metric(labels, self._stimulus_set['object_class'].values)
+        ceiling = self.ceiling
+        score = raw_score / ceiling
+        score.attrs['raw'] = raw_score
+        score.attrs['ceiling'] = ceiling
+        return score
+
+    def filter_occluders(self):
+        """
+        a method that filters both self._stimulus_set and self._assembly to only contain the values of
+        self.visibility and self.occluder_type for their respective columns.
+        """
+        if self.visibility != 'all':
+            self.filter_variable('visibility', self.visibility)
+        if self.occluder_type != 'all':
+            self.filter_variable('occluder_type', self.occluder_type)
+        else:
+            # remove unoccluded condition when looking at "all" conditions
+            self._stimulus_set = self._stimulus_set[(self._stimulus_set['occluder_type'] != 'unoccluded')]
+
+    def filter_variable(self, variable, filter):
+        # Filter the stimulus set based on variable
+        stimulus_set = self._stimulus_set.copy()
+        filtered_stimulus_set = stimulus_set[(stimulus_set[variable] == filter)]
+        self._stimulus_set = filtered_stimulus_set
+
+        # grab the filtered stimulus ids to do easy selection in the assembly
+        #filtered_stimulus_ids = filtered_stimulus_set['stimulus_id'].unique()
+        #self._assembly = self._assembly.sel(stimulus_id=filtered_stimulus_ids)
+
+
+class Coggan2024_visibility_01(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_visibility_01, self).__init__(
+            visibility=0.1,
+            occluder_type='all'
+        )
+
+
+class Coggan2024_visibility_02(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_visibility_02, self).__init__(
+            visibility=0.2,
+            occluder_type='all'
+        )
+
+
+class Coggan2024_visibility_04(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_visibility_04, self).__init__(
+            visibility=0.4,
+            occluder_type='all'
+        )
+
+
+class Coggan2024_visibility_06(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_visibility_06, self).__init__(
+            visibility=0.6,
+            occluder_type='all'
+        )
+
+
+class Coggan2024_visibility_08(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_visibility_08, self).__init__(
+            visibility=0.8,
+            occluder_type='all'
+        )
+
+
+class Coggan2024_visibility_10(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    # the unoccluded condition is the one with visibility == 1.0
+    def __init__(self):
+        super(Coggan2024_visibility_10, self).__init__(
+            visibility=1.0,
+            occluder_type='unoccluded'
+        )
+
+
+class Coggan2024_occludertype_polkasquare(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_occludertype_polkasquare, self).__init__(
+            visibility='all',
+            occluder_type='polkasquare'
+        )
+
+
+class Coggan2024_occludertype_polkadot(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_occludertype_polkadot, self).__init__(
+            visibility='all',
+            occluder_type='polkadot'
+        )
+
+
+class Coggan2024_occludertype_barObl04(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_occludertype_barObl04, self).__init__(
+            visibility='all',
+            occluder_type='barObl04'
+        )
+
+
+class Coggan2024_occludertype_naturalUntexturedCropped2(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_occludertype_naturalUntexturedCropped2, self).__init__(
+            visibility='all',
+            occluder_type='naturalUntexturedCropped2'
+        )
+
+
+class Coggan2024_occludertype_barVert04(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_occludertype_barVert04, self).__init__(
+            visibility='all',
+            occluder_type='barVert04'
+        )
+
+
+class Coggan2024_occludertype_barHorz04(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_occludertype_barHorz04, self).__init__(
+            visibility='all',
+            occluder_type='barHorz04'
+        )
+
+
+class Coggan2024_occludertype_mudsplash(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_occludertype_mudsplash, self).__init__(
+            visibility='all',
+            occluder_type='mudsplash'
+        )
+
+
+class Coggan2024_occludertype_crossBarOblique(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_occludertype_crossBarOblique, self).__init__(
+            visibility='all',
+            occluder_type='crossBarOblique'
+        )
+
+
+class Coggan2024_occludertype_crossBarCardinal(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
+    def __init__(self):
+        super(Coggan2024_occludertype_crossBarCardinal, self).__init__(
+            visibility='all',
+            occluder_type='crossBarCardinal'
+        )
+
+
+class Coggan2024_behavior_ConditionWiseAccuracySimilarity_Correlation(BenchmarkBase):
+    ### DEPRECATED IN FAVOR OF Coggan2024_behavior_ConditionWiseLabelingAccuracySimilarity
+    ### Here for future comparison/reference/proofing
     """
     This benchmark measures classification accuracy for a set of occluded object images, then attains the mean accuracy
     for each of the 18 occlusion conditions. This is then correlated with the corresponding accuracies for each of the
@@ -37,7 +289,7 @@ class Coggan2024_behavior_ConditionWiseAccuracySimilarity(BenchmarkBase):
         self._visual_degrees = 10
         self._number_of_trials = 1
         self._ceiling_func = lambda assembly: get_noise_ceiling(assembly)
-        super(Coggan2024_behavior_ConditionWiseAccuracySimilarity, self).__init__(
+        super(Coggan2024_behavior_ConditionWiseAccuracySimilarity_Correlation, self).__init__(
             identifier='tong.Coggan2024_behavior-ConditionWiseAccuracySimilarity',
             version=1,
             ceiling_func=lambda df: get_noise_ceiling(df),
@@ -129,5 +381,11 @@ def ceiler(score: Score, ceiling: Score) -> Score:
     return ceiled_score
 
 
-
-
+def remove_nans(data):
+    """
+    removes nans from the data and replaces them with a string 'none'. uses pandas to simultaneously hand numeric
+    and non-numeric data.
+    """
+    for coord in data.coords:
+        data[coord] = data[coord].where(~pd.isna(data[coord]), 'none')
+    return data
