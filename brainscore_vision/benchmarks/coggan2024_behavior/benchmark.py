@@ -98,7 +98,6 @@ class Coggan2024_behavior_ConditionWiseProbabilitiesAccuracySimilarity(Benchmark
 
 
 class Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy(BenchmarkBase):
-    # TODO: this should be a benchmark base that the others should call
     def __init__(self, visibility='all', occluder_type='all'):
         self.visibility = visibility
         self.occluder_type = occluder_type
@@ -149,127 +148,6 @@ class Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy(BenchmarkBase
         # grab the filtered stimulus ids to do easy selection in the assembly
         #filtered_stimulus_ids = filtered_stimulus_set['stimulus_id'].unique()
         #self._assembly = self._assembly.sel(stimulus_id=filtered_stimulus_ids)
-
-
-class Coggan2024_visibility_01(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_visibility_01, self).__init__(
-            visibility=0.1,
-            occluder_type='all'
-        )
-
-
-class Coggan2024_visibility_02(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_visibility_02, self).__init__(
-            visibility=0.2,
-            occluder_type='all'
-        )
-
-
-class Coggan2024_visibility_04(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_visibility_04, self).__init__(
-            visibility=0.4,
-            occluder_type='all'
-        )
-
-
-class Coggan2024_visibility_06(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_visibility_06, self).__init__(
-            visibility=0.6,
-            occluder_type='all'
-        )
-
-
-class Coggan2024_visibility_08(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_visibility_08, self).__init__(
-            visibility=0.8,
-            occluder_type='all'
-        )
-
-
-class Coggan2024_visibility_10(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    # the unoccluded condition is the one with visibility == 1.0
-    def __init__(self):
-        super(Coggan2024_visibility_10, self).__init__(
-            visibility=1.0,
-            occluder_type='unoccluded'
-        )
-
-
-class Coggan2024_occludertype_polkasquare(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_occludertype_polkasquare, self).__init__(
-            visibility='all',
-            occluder_type='polkasquare'
-        )
-
-
-class Coggan2024_occludertype_polkadot(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_occludertype_polkadot, self).__init__(
-            visibility='all',
-            occluder_type='polkadot'
-        )
-
-
-class Coggan2024_occludertype_barObl04(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_occludertype_barObl04, self).__init__(
-            visibility='all',
-            occluder_type='barObl04'
-        )
-
-
-class Coggan2024_occludertype_naturalUntexturedCropped2(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_occludertype_naturalUntexturedCropped2, self).__init__(
-            visibility='all',
-            occluder_type='naturalUntexturedCropped2'
-        )
-
-
-class Coggan2024_occludertype_barVert04(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_occludertype_barVert04, self).__init__(
-            visibility='all',
-            occluder_type='barVert04'
-        )
-
-
-class Coggan2024_occludertype_barHorz04(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_occludertype_barHorz04, self).__init__(
-            visibility='all',
-            occluder_type='barHorz04'
-        )
-
-
-class Coggan2024_occludertype_mudsplash(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_occludertype_mudsplash, self).__init__(
-            visibility='all',
-            occluder_type='mudsplash'
-        )
-
-
-class Coggan2024_occludertype_crossBarOblique(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_occludertype_crossBarOblique, self).__init__(
-            visibility='all',
-            occluder_type='crossBarOblique'
-        )
-
-
-class Coggan2024_occludertype_crossBarCardinal(Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy):
-    def __init__(self):
-        super(Coggan2024_occludertype_crossBarCardinal, self).__init__(
-            visibility='all',
-            occluder_type='crossBarCardinal'
-        )
 
 
 class Coggan2024_behavior_ConditionWiseAccuracySimilarity_Correlation(BenchmarkBase):
