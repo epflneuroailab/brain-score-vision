@@ -5,23 +5,9 @@ from .benchmark import (
     Coggan2024_behavior_ConditionWiseLabelingAccuracySimilarity,
     Coggan2024_behavior_ConditionWiseProbabilitiesAccuracySimilarity,
     Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy,
-
-    Coggan2024_occludertype_polkasquare,
-    Coggan2024_occludertype_crossBarCardinal,
-    Coggan2024_occludertype_barObl04,
-    Coggan2024_occludertype_naturalUntexturedCropped2,
-    Coggan2024_occludertype_barHorz04,
-    Coggan2024_occludertype_crossBarOblique,
-    Coggan2024_occludertype_mudsplash,
-    Coggan2024_occludertype_barVert04,
-    Coggan2024_occludertype_polkadot,
-    Coggan2024_visibility_01,
-    Coggan2024_visibility_02,
-    Coggan2024_visibility_04,
-    Coggan2024_visibility_06,
-    Coggan2024_visibility_08,
-    Coggan2024_visibility_10
 )
+
+
 benchmark_registry['tong.Coggan2024_behavior-ConditionWiseLabelingAccuracySimilarity'] = Coggan2024_behavior_ConditionWiseLabelingAccuracySimilarity
 benchmark_registry['tong.Coggan2024_behavior-ConditionWiseProbabilitiesAccuracySimilarity'] = Coggan2024_behavior_ConditionWiseProbabilitiesAccuracySimilarity
 benchmark_registry['tong.Coggan2024_behavior-ConditionWiseLabelingEngineeringAccuracy'] = Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy
