@@ -7,6 +7,7 @@ from brainscore_vision.benchmark_helpers.screen import place_on_screen
 from brainscore_core.metrics import Score
 from brainscore_vision.model_interface import BrainModel
 from brainscore_vision.utils import LazyLoad
+from brainio.assemblies import BehavioralAssembly
 from scipy.stats import sem
 import pandas as pd
 
@@ -148,6 +149,68 @@ class Coggan2024_behavior_ConditionWiseLabelingEngineeringAccuracy(BenchmarkBase
         # grab the filtered stimulus ids to do easy selection in the assembly
         #filtered_stimulus_ids = filtered_stimulus_set['stimulus_id'].unique()
         #self._assembly = self._assembly.sel(stimulus_id=filtered_stimulus_ids)
+
+
+class Coggan2024_behavior_ConditionWiseProbabilitiesEngineeringAccuracy(BenchmarkBase):
+    def __init__(self, visibility='all', occluder_type='all'):
+        self.visibility = visibility
+        self.occluder_type = occluder_type
+        self._metric = load_metric('accuracy')
+        self._ceiling_func = lambda assembly: get_noise_ceiling(assembly)
+        self._fitting_stimuli = load_stimulus_set('Coggan2024_behavior_fitting')
+        #self._assembly = load_dataset('Coggan2024_behavior')
+        self._stimulus_set = load_dataset('Coggan2024_behavior').stimulus_set
+        super(Coggan2024_behavior_ConditionWiseProbabilitiesEngineeringAccuracy, self).__init__(
+            identifier='tong.Coggan2024_behavior-LabelingConditionWiseEngineeringAccuracy',
+            version=1,
+            ceiling_func=lambda: Score(1),
+            parent='Coggan2024-top1',
+            bibtex=BIBTEX,
+        )
+
+    def __call__(self, candidate: BrainModel):
+        self.filter_occluders()
+        choice_labels = set(self._stimulus_set['object_class'].values)
+        choice_labels = list(sorted(choice_labels))
+        candidate.start_task(BrainModel.Task.probabilities, self._fitting_stimuli)
+        probabilities = candidate.look_at(self._stimulus_set)
+        labels = self.convert_proba_to_choices(probabilities)
+        raw_score = self._metric(labels, self._stimulus_set['object_class'].values)
+        ceiling = self.ceiling
+        score = raw_score / ceiling
+        score.attrs['raw'] = raw_score
+        score.attrs['ceiling'] = ceiling
+        return score
+
+    def filter_occluders(self):
+        """
+        a method that filters both self._stimulus_set and self._assembly to only contain the values of
+        self.visibility and self.occluder_type for their respective columns.
+        """
+        if self.visibility != 'all':
+            self.filter_variable('visibility', self.visibility)
+        if self.occluder_type != 'all':
+            self.filter_variable('occluder_type', self.occluder_type)
+        else:
+            # remove unoccluded condition when looking at "all" conditions
+            self._stimulus_set = self._stimulus_set[(self._stimulus_set['occluder_type'] != 'unoccluded')]
+
+    def filter_variable(self, variable, filter):
+        # Filter the stimulus set based on variable
+        stimulus_set = self._stimulus_set.copy()
+        filtered_stimulus_set = stimulus_set[(stimulus_set[variable] == filter)]
+        self._stimulus_set = filtered_stimulus_set
+
+        # grab the filtered stimulus ids to do easy selection in the assembly
+        #filtered_stimulus_ids = filtered_stimulus_set['stimulus_id'].unique()
+        #self._assembly = self._assembly.sel(stimulus_id=filtered_stimulus_ids)
+
+    @staticmethod
+    def convert_proba_to_choices(source: BehavioralAssembly) -> np.array:
+        """Converts the probability values returned by models doing probability tasks to behavioral choices."""
+        decisions = np.argmax(source.values, axis=1)
+        choices = [source['choice'].values[decision] for decision in decisions]
+        return BehavioralAssembly(choices, coords={'presentation': source['presentation']})
 
 
 class Coggan2024_behavior_ConditionWiseAccuracySimilarity_Correlation(BenchmarkBase):
