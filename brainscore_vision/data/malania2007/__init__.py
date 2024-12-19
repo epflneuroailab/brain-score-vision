@@ -252,3 +252,163 @@ stimulus_set_registry['Malania2007.vernier_only'] = lambda: load_stimulus_set_fr
     csv_version_id="PQoHljauNff1yWCMNKd5JEzR8Y38_j.0",
     zip_version_id="6gE8TX1J89BnsHmdqb7rIGvRMw.sZdo6"
 )
+stimulus_set_registry['VernierEngineering2024.short2_fit'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_short-2_fit',
+    bucket="brainio-brainscore",
+    csv_sha1="84fb3ecb17ae54f787830240e98bfa9448115224",
+    zip_sha1="5378dc85a485b0b58a7f11740e511750670320e3",
+    csv_version_id="WzXvc5hWjJ5GwxxB_gIVJuNqwbR0aJwC",
+    zip_version_id="2bP0TX8VEZr_UWaapH7cTXc_eLUCMSLi"
+)
+stimulus_set_registry['VernierEngineering2024.short2_test'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_short-2_test',
+    bucket="brainio-brainscore",
+    csv_sha1="f0835dcc0606ef6d2f71d353b855a8549ddf9043",
+    zip_sha1="ff4956e8a0ce03929632a2eca03ca18077e27e6b",
+    csv_version_id="U_4nI99u4m__0I2Q8eAhKoW9oCW68Pd2",
+    zip_version_id="VNHG2h8RbyV_yHIHOkTrmh.dpKzkqNB4"
+)
+stimulus_set_registry['VernierEngineering2024.short4_fit'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_short-4_fit',
+    bucket="brainio-brainscore",
+    csv_sha1="17ba7167847862229e86c3d635eccc99c3e5ce9d",
+    zip_sha1="2012ff6aba8c3eb51a53bb97d4b321c269aadc39",
+    csv_version_id="x445JqodYBDBGf8ynIp7T_ZFvs1zzA8A",
+    zip_version_id="r16EZ9_qLdpPCE4hXZJu79A5K2urBNo3"
+)
+stimulus_set_registry['VernierEngineering2024.short4_test'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_short-4_test',
+    bucket="brainio-brainscore",
+    csv_sha1="eba0a4e2d1134556fd0c76f744a4c67d042fb02b",
+    zip_sha1="e1492bd61cff0746d23b9abd027cfb549127e0d2",
+    csv_version_id="adaYBQAeIrgTXnihxKhXesvwUyF_3juh",
+    zip_version_id="Vwc.g51HAqQvN3SM3TLLIEznsuuxoNcf"
+)
+stimulus_set_registry['VernierEngineering2024.short6_fit'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_short-6_fit',
+    bucket="brainio-brainscore",
+    csv_sha1="44846bee8dcae893edb2d4999e91d75feab084df",
+    zip_sha1="7b820eba167d68c8d0f59ee129a2480e8661a023",
+    csv_version_id="Ec6sRFlbQcQ9EOfoUFKoZuPaQcXhod_G",
+    zip_version_id="87xSejgRbUWgbcPueIfK07G4VnBzfbz3"
+)
+stimulus_set_registry['VernierEngineering2024.short6_test'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_short-6_test',
+    bucket="brainio-brainscore",
+    csv_sha1="8c4e09102a75a1d9ac063ba68472af8d5ba19499",
+    zip_sha1="237b52465fa268e3c76d10c784139aa011085f42",
+    csv_version_id="c38AFNxpFnhLm0OC5VbXYXPO5tXiOcqb",
+    zip_version_id="3dXM70Xp2zwZcbkz48wkaGYGm21jxnrV"
+)
+stimulus_set_registry['VernierEngineering2024.short8_fit'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_short-8_fit',
+    bucket="brainio-brainscore",
+    csv_sha1="f9f0c86805d6d87c91de119632af9f6ce3e113d2",
+    zip_sha1="e3d6dc6fc05c1aea52aa862e868e1b907fb4b1e5",
+    csv_version_id="foQ4hDhY7LehAmkB1fC.qMMjGOY8bpPV",
+    zip_version_id="gu_1yn48iWOX1X2MGJutNzFTVEfh2oaO"
+)
+stimulus_set_registry['VernierEngineering2024.short8_test'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_short-8_test',
+    bucket="brainio-brainscore",
+    csv_sha1="f7d5f44decf06ae8756b445d64f6bb8b27d19fb6",
+    zip_sha1="75611f6050c85f37f8d5b22918dcee207bbcf8ce",
+    csv_version_id="3rH5KneB_CKUB183Kl2QLpK7Er4TiM1a",
+    zip_version_id="SJwgfvuYh0UpJT9RYEuSaFCCNBRitH0c"
+)
+stimulus_set_registry['VernierEngineering2024.short16_fit'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_short-16_fit',
+    bucket="brainio-brainscore",
+    csv_sha1="9f7d4e83b1c167218f910bb3c5dc33405edf9e9b",
+    zip_sha1="276dfc4759e745be4acf2e2b020a50dc2ebc718b",
+    csv_version_id="E21ZA3u3t1vLVUqOJmP6xcfhSN.cI.Mb",
+    zip_version_id="Yg.GvFFykAaUT9RjQyDXmypRQrMTNrf_"
+)
+stimulus_set_registry['VernierEngineering2024.short16_test'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_short-16_test',
+    bucket="brainio-brainscore",
+    csv_sha1="098181690548d28afc584b23ae8302193a87acb1",
+    zip_sha1="98513feb8d110efd8f9a2591c623f45033356468",
+    csv_version_id="LHQnaplsWYyff1q.cKpfntXkvWt358cj",
+    zip_version_id="Vnyas9ZrbGmjUTu5SwkiEjGLEoK98Hb1"
+)
+stimulus_set_registry['VernierEngineering2024.equal2_fit'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_equal-2_fit',
+    bucket="brainio-brainscore",
+    csv_sha1="d47c43f68eb61424efb4a42703d0eb10abc6cdae",
+    zip_sha1="155872f2733305f556e7f8dd97c2a56c5491b113",
+    csv_version_id="rddzygIx4CAGTYltdXR7fKpXERv13vec",
+    zip_version_id="5H6YbqhM5qDoDLF49drKRb1D8LR_EPk7"
+)
+stimulus_set_registry['VernierEngineering2024.equal2_test'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_equal-2_test',
+    bucket="brainio-brainscore",
+    csv_sha1="17525ede2b8bf581fc47a58abf533d59c2ede3fd",
+    zip_sha1="64370057f58c3e5a2b024d0f8dc57d14789055af",
+    csv_version_id="bzAJHuOaHvHXajIZakhPN95Ore7QyyO7",
+    zip_version_id="ONMUPWkaPqNCunxteM5AsoYuIytEJDoI"
+)
+stimulus_set_registry['VernierEngineering2024.equal16_fit'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_equal-16_fit',
+    bucket="brainio-brainscore",
+    csv_sha1="19759f8dcbbad62f31fba9ad77c8ecea30f1af4f",
+    zip_sha1="1f170c07efd918beefb9855d9d8e724eb4711f2d",
+    csv_version_id="ef6Ai4jwL3aUXbMiCCXV1AC6WT2VYGLM",
+    zip_version_id=".DMyKejBOsPZTMXl_CsYeOvi8x4yjwLY"
+)
+stimulus_set_registry['VernierEngineering2024.equal16_test'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_equal-16_test',
+    bucket="brainio-brainscore",
+    csv_sha1="2b8f3f21a95e901e62e205f4abcdf69cf376596b",
+    zip_sha1="4b5c1531bfa42c53887d71e7aa0e3ee7e3b587b2",
+    csv_version_id="gXA.Oeb3fN4Zj5BwtXRsNlpoOHVgRTpp",
+    zip_version_id="BhDCeRhNQAFAy7du9wwi2.1y84jIdZrO"
+)
+stimulus_set_registry['VernierEngineering2024.long2_fit'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_long-2_fit',
+    bucket="brainio-brainscore",
+    csv_sha1="1a96112c3e2a961a551eedee6841983e025dbef2",
+    zip_sha1="7b1bed2a3509b4f219eda3a419ca63833e22b214",
+    csv_version_id=".rg.pxyyBc.6J5PB0mqtEtsIKMv2iSYE",
+    zip_version_id="mFYQFFNCajZJE0RUWIFKiAiEY36nq8AD"
+)
+stimulus_set_registry['VernierEngineering2024.long2_test'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_long-2_test',
+    bucket="brainio-brainscore",
+    csv_sha1="bbd2005d6029347a404c448df6f16d5704690f9c",
+    zip_sha1="16e8c6122dc34e4a051fd43a33af852a9b554dbe",
+    csv_version_id="lOU8IGFMJXRbpPX7IkqG6u..P7pB7vaW",
+    zip_version_id="H87NqzPLeqUYC_ss7UZSG1sUAfbRSVCg"
+)
+stimulus_set_registry['VernierEngineering2024.long16_fit'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_long-16_fit',
+    bucket="brainio-brainscore",
+    csv_sha1="cc88faba62bf15cf45ec176b6b931cbbc86fcc8e",
+    zip_sha1="654b1c98905a51655cf528780a5238c49766e7f3",
+    csv_version_id="bXrE5sUuvK25.cwUZ6TI5bRbH.iIiBYi",
+    zip_version_id="YYhkWAod1qEn4Uc7nT.JqEyZrzs5OOy3"
+)
+stimulus_set_registry['VernierEngineering2024.long16_test'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_long-16_test',
+    bucket="brainio-brainscore",
+    csv_sha1="3d74c214c64023bd8d67b84cdd5f3e6c0cdccd77",
+    zip_sha1="6d64a3a3d6543cae0781e37ad5f5565353890e56",
+    csv_version_id="RXtLgF1tUCsP9igXai5UfGETyAyztALg",
+    zip_version_id="UXIsQX9dvqIEFkYd82.FJSEHv9bR.PN0"
+)
+stimulus_set_registry['VernierEngineering2024.vernier_only_fit'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_vernier-only_fit',
+    bucket="brainio-brainscore",
+    csv_sha1="1b2edc7593cfc86f42e6c60059ba068977b327d7",
+    zip_sha1="0dca6b49e6ea0b3f4d0b77d4b94eee6a0f9af4ec",
+    csv_version_id="WU..KxQPhkjWmC2e2Yq3tyN.UO5ZJZKp",
+    zip_version_id="wXsZKE9t7P_.pOg6VWaEzFu3_xR9x.J."
+)
+stimulus_set_registry['VernierEngineering2024.vernier_only_test'] = lambda: load_stimulus_set_from_s3(
+    identifier='VernierEngineering2024_vernier-only_test',
+    bucket="brainio-brainscore",
+    csv_sha1="0c84e11761bce93ed6d039ec49dbdc2212deb6cf",
+    zip_sha1="5f0478de6d142d5517a28d8ccfbf4c51520f04ff",
+    csv_version_id="8jAU8j9vVFiKyY81xpGPnSxz5R6bTjku",
+    zip_version_id="ML40c90TzIGb7Ig6vRKXNmtNICKnrhsK"
+)

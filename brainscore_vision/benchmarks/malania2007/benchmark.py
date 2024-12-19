@@ -2,7 +2,7 @@ from typing import Tuple
 import numpy as np
 
 import brainscore_vision
-from brainio.assemblies import PropertyAssembly
+from brainio.assemblies import PropertyAssembly, BehavioralAssembly
 from brainscore_vision.benchmarks import BenchmarkBase
 from brainscore_vision.benchmark_helpers.screen import place_on_screen
 from brainscore_vision import load_metric
@@ -34,6 +34,55 @@ DATASETS = ['short2-threshold_elevation', 'short4-threshold_elevation', 'short6-
 NUM_FLANKERS_PER_CONDITION = {'short2': 2, 'short4': 4, 'short6': 6, 'short8': 8,
                               'short16': 16, 'equal2': 2, 'long2': 2, 'equal16': 16,
                               'long16': 16, 'vernier_only': 0}
+
+
+class _VernierEngineeringAccuracy(BenchmarkBase):
+    """
+    This benchmark is a pure accuracy version of the Malania2007 benchmark. It is used to simply estimate the
+    engineering accuracy of the Malania dataset using the accuracy metric, and is not used for the main benchmarking
+    purposes of the Malania2007 benchmark.
+    """
+    def __init__(self, condition):
+        self._stimulus_set = brainscore_vision.load_stimulus_set(f'VernierEngineeringAccuracy.{condition}')
+        self._fitting_stimuli = brainscore_vision.load_stimulus_set(f'Vernier.{condition}'.rstrip('-threshold_elevation') + '_fit')
+
+        self._metric = load_metric('accuracy')
+        self._number_of_trials = 1
+
+        super(_VernierEngineeringAccuracy, self).__init__(
+            identifier=f'Malania2007EngineeringAccuracy_{condition}',
+            version=1,
+            ceiling_func=lambda: Score(1.),
+            parent='Malania2007-top1',
+            bibtex=BIBTEX)
+
+    def __call__(self, candidate: BrainModel):
+        fitting_stimuli = place_on_screen(
+            self._fitting_stimuli,
+            target_visual_degrees=candidate.visual_degrees(),
+            source_visual_degrees=candidate.visual_degrees()
+        )
+        stimulus_set = place_on_screen(
+            self._stimulus_set,
+            target_visual_degrees=candidate.visual_degrees(),
+            source_visual_degrees=candidate.visual_degrees()
+        )
+        candidate.start_task(BrainModel.Task.probabilities, fitting_stimuli)
+        probabilities = candidate.look_at(stimulus_set)
+        labels = self.convert_proba_to_choices(probabilities)
+        raw_score = self._metric(labels, self._stimulus_set['image_label'].values)
+        ceiling = self.ceiling
+        score = raw_score / ceiling
+        score.attrs['raw'] = raw_score
+        score.attrs['ceiling'] = ceiling
+        return score
+
+    @staticmethod
+    def convert_proba_to_choices(source: BehavioralAssembly) -> np.array:
+        """Converts the probability values returned by models doing probability tasks to behavioral choices."""
+        decisions = np.argmax(source.values, axis=1)
+        choices = [source['choice'].values[decision] for decision in decisions]
+        return BehavioralAssembly(choices, coords={'presentation': source['presentation']})
 
 
 class _Malania2007Base(BenchmarkBase):
