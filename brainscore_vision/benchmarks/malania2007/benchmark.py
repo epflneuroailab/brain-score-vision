@@ -42,18 +42,22 @@ class _VernierEngineeringAccuracy(BenchmarkBase):
     engineering accuracy of the Malania dataset using the accuracy metric, and is not used for the main benchmarking
     purposes of the Malania2007 benchmark.
     """
-    def __init__(self, condition):
-        self._stimulus_set = brainscore_vision.load_stimulus_set(f'VernierEngineeringAccuracy.{condition}')
-        self._fitting_stimuli = brainscore_vision.load_stimulus_set(f'Vernier.{condition}'.rstrip('-threshold_elevation') + '_fit')
+    def __init__(self, condition, n_training_stimuli=250):
+        self._stimulus_set = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_test')
+        self._fitting_stimuli = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_fit')
+
+        # reduce the fitting stimulus set to a random selection of 500 stimuli
+        print(f"NOTE: currently using a random selection of {n_training_stimuli}/{len(self._fitting_stimuli)} training stimuli")
+        self._fitting_stimuli = self._fitting_stimuli.sample(n_training_stimuli)
 
         self._metric = load_metric('accuracy')
         self._number_of_trials = 1
 
         super(_VernierEngineeringAccuracy, self).__init__(
-            identifier=f'Malania2007EngineeringAccuracy_{condition}',
+            identifier=f'VernierEngineeringAccuracy_{condition}',
             version=1,
             ceiling_func=lambda: Score(1.),
-            parent='Malania2007-top1',
+            parent='VernierEngineering-top1',
             bibtex=BIBTEX)
 
     def __call__(self, candidate: BrainModel):
