@@ -41,8 +41,10 @@ class _VernierEngineeringAccuracy(BenchmarkBase):
     This benchmark is a pure accuracy version of the Malania2007 benchmark. It is used to simply estimate the
     engineering accuracy of the Malania dataset using the accuracy metric, and is not used for the main benchmarking
     purposes of the Malania2007 benchmark.
+
+    n_training_stimuli = 80  # each block (expt. condition) for humans was 80 trials
     """
-    def __init__(self, condition, n_training_stimuli=250):
+    def __init__(self, condition, n_training_stimuli=80):
         self._stimulus_set = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_test')
         self._fitting_stimuli = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_fit')
 
@@ -70,6 +72,76 @@ class _VernierEngineeringAccuracy(BenchmarkBase):
             self._stimulus_set,
             target_visual_degrees=candidate.visual_degrees(),
             source_visual_degrees=candidate.visual_degrees()
+        )
+        candidate.start_task(BrainModel.Task.probabilities, fitting_stimuli)
+        probabilities = candidate.look_at(stimulus_set)
+        labels = self.convert_proba_to_choices(probabilities)
+        raw_score = self._metric(labels, self._stimulus_set['image_label'].values)
+        ceiling = self.ceiling
+        score = raw_score / ceiling
+        score.attrs['raw'] = raw_score
+        score.attrs['ceiling'] = ceiling
+        return score
+
+    @staticmethod
+    def convert_proba_to_choices(source: BehavioralAssembly) -> np.array:
+        """Converts the probability values returned by models doing probability tasks to behavioral choices."""
+        decisions = np.argmax(source.values, axis=1)
+        choices = [source['choice'].values[decision] for decision in decisions]
+        return BehavioralAssembly(choices, coords={'presentation': source['presentation']})
+
+
+class _Malania2007AccuracyAtThreshold(BenchmarkBase):
+    """
+    This benchmark is a pure accuracy version of the Malania2007 benchmark. It is used to estimate the performance
+    of the model at the human 75% accuracy threshold level (+- 1std of human across-subject performance).
+
+    n_training_stimuli = 80  # each block (expt. condition) for humans was 80 trials
+    """
+    def __init__(self, condition, n_training_stimuli=80):
+        self._assembly = load_assembly(condition)
+        self._stimulus_set = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_test')
+        self._fitting_stimuli = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_fit')
+
+        # reduce the fitting stimulus set to a random selection of 500 stimuli
+        print(f"NOTE: currently using a random selection of {n_training_stimuli}/{len(self._fitting_stimuli)} training stimuli")
+        self._fitting_stimuli = self._fitting_stimuli.sample(n_training_stimuli)
+
+        # TODO: subselect the testing set for the human threshold values
+        human_mean_threshold = np.mean(self._assembly.values)
+        human_std_threshold = np.std(self._assembly.values)
+
+        # select the minimum and maximum threshold to be tested by taking the mean +- 1 std
+        min_threshold = human_mean_threshold - human_std_threshold
+        max_threshold = human_mean_threshold + human_std_threshold
+        # pick the closest values in self._stimulus_set['vernier_offset_arcsec'] to the min and max threshold
+        min_threshold = self._stimulus_set['vernier_offset_arcsec'].values[np.argmin(np.abs(self._stimulus_set['vernier_offset_arcsec'].values - min_threshold))]
+        max_threshold = self._stimulus_set['vernier_offset_arcsec'].values[np.argmin(np.abs(self._stimulus_set['vernier_offset_arcsec'].values - max_threshold))]
+
+        # select all the threshold values that fall between the min and max in the stimulus set
+        self._stimulus_set = self._stimulus_set[(self._stimulus_set['vernier_offset_arcsec'] >= min_threshold) & (self._stimulus_set['vernier_offset_arcsec'] <= max_threshold)]
+
+        self._metric = load_metric('accuracy')
+        self._number_of_trials = 1
+        self._visual_degrees = 2.986667
+
+        super(_Malania2007AccuracyAtThreshold, self).__init__(
+            identifier=f'VernierEngineeringAccuracy_{condition}',
+            version=1,
+            ceiling_func=lambda: Score(1.),
+            parent='VernierEngineering-top1',
+            bibtex=BIBTEX)
+
+    def __call__(self, candidate: BrainModel):
+        fitting_stimuli = place_on_screen(
+            self._fitting_stimuli,
+            target_visual_degrees=candidate.visual_degrees(),
+            source_visual_degrees=self._visual_degrees
+        )
+        stimulus_set = place_on_screen(
+            self._stimulus_set,
+            target_visual_degrees=candidate.visual_degrees(),
+            source_visual_degrees=self._visual_degrees
         )
         candidate.start_task(BrainModel.Task.probabilities, fitting_stimuli)
         probabilities = candidate.look_at(stimulus_set)
@@ -140,11 +212,22 @@ class _Malania2007Base(BenchmarkBase):
 
         self._assemblies = {'baseline_assembly': self._baseline_assembly,
                             'condition_assembly': self._assembly}
-        self._stimulus_set = brainscore_vision.load_stimulus_set(f'Malania2007.{self.condition}'.rstrip('-threshold_elevation'))
-        self._baseline_stimulus_set = brainscore_vision.load_stimulus_set(f'Malania2007.{self.baseline_condition}'.rstrip('-threshold_elevation'))
+        #self._stimulus_set = brainscore_vision.load_stimulus_set(f'Malania2007.{self.condition}'.rstrip('-threshold_elevation'))
+        #self._baseline_stimulus_set = brainscore_vision.load_stimulus_set(f'Malania2007.{self.baseline_condition}'.rstrip('-threshold_elevation'))
+        #self._fitting_stimuli = brainscore_vision.load_stimulus_set(f'Malania2007.{self.condition}'.rstrip('-threshold_elevation') + '_fit')
+
+        self._baseline_stimulus_set = brainscore_vision.load_stimulus_set((f'VernierEngineering2024.vernier_only_test'))
+        self._stimulus_set = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_test')
+        self._fitting_stimuli = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_fit')
+
         self._stimulus_sets = {self.condition: self._stimulus_set,
                                self.baseline_condition: self._baseline_stimulus_set}
-        self._fitting_stimuli = brainscore_vision.load_stimulus_set(f'Malania2007.{self.condition}'.rstrip('-threshold_elevation') + '_fit')
+
+        # reduce the fitting stimulus set to a random selection of 500 stimuli
+        n_training_stimuli = 80  # each block (expt. condition) for humans was 80 trials
+        print(
+            f"NOTE: currently using a random selection of {n_training_stimuli}/{len(self._fitting_stimuli)} training stimuli")
+        self._fitting_stimuli = self._fitting_stimuli.sample(n_training_stimuli)
 
         self._metric = load_metric('threshold_elevation',
                                    independent_variable='image_label',
@@ -208,7 +291,7 @@ class _Malania2007VernierAcuity(BenchmarkBase):
                                    threshold_accuracy=0.75)
 
         self._visual_degrees = 2.986667
-        self._number_of_trials = 10  # arbitrary choice for microsaccades to improve precision of estimates
+        self._number_of_trials = 1  # arbitrary choice for microsaccades to improve precision of estimates
 
         super(_Malania2007VernierAcuity, self).__init__(
             identifier=f'Malania2007.vernieracuity-threshold', version=1,
@@ -226,14 +309,14 @@ class _Malania2007VernierAcuity(BenchmarkBase):
                 source_visual_degrees=self._visual_degrees
             )
             candidate.start_task(BrainModel.Task.probabilities, fitting_stimuli=fitting_stimulus_set,
-                                number_of_trials=2, require_variance=True)
+                                number_of_trials=1, require_variance=False)
             stimulus_set = place_on_screen(
                 self._stimulus_set,
                 target_visual_degrees=candidate.visual_degrees(),
                 source_visual_degrees=self._visual_degrees
             )
             model_response = candidate.look_at(stimulus_set, number_of_trials=self._number_of_trials,
-                                               require_variance=True)
+                                               require_variance=False)
 
             raw_score = self._metric(model_response, self._assemblies[condition])
             # Adjust score to ceiling

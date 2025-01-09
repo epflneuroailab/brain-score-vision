@@ -20,7 +20,8 @@ DATASETS = [
 
 def score_vernier_model(model_name, vernier_condition):
     model = load_model(model_name)
-    benchmark = load_benchmark(f"VernierEngineeringAccuracy2024.{vernier_condition}")
+    #benchmark = load_benchmark(f"VernierEngineeringAccuracy2024.{vernier_condition}")
+    benchmark = load_benchmark(f"_Malania2007AccuracyAtThreshold.{vernier_condition}")
     score = benchmark(model)
     return score
 
