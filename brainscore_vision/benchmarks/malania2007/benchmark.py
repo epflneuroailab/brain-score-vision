@@ -42,9 +42,9 @@ class _VernierEngineeringAccuracy(BenchmarkBase):
     engineering accuracy of the Malania dataset using the accuracy metric, and is not used for the main benchmarking
     purposes of the Malania2007 benchmark.
 
-    n_training_stimuli = 80  # each block (expt. condition) for humans was 80 trials
+    n_training_stimuli = 160  # each block (expt. condition) for humans was 80 trials, and blocks were run twice
     """
-    def __init__(self, condition, n_training_stimuli=80):
+    def __init__(self, condition, n_training_stimuli=160):
         self._stimulus_set = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_test')
         self._fitting_stimuli = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_fit')
 
@@ -96,9 +96,9 @@ class _Malania2007AccuracyAtThreshold(BenchmarkBase):
     This benchmark is a pure accuracy version of the Malania2007 benchmark. It is used to estimate the performance
     of the model at the human 75% accuracy threshold level (+- 1std of human across-subject performance).
 
-    n_training_stimuli = 80  # each block (expt. condition) for humans was 80 trials
+    n_training_stimuli = 160  # each block (expt. condition) for humans was 80 trials, and blocks were run twice
     """
-    def __init__(self, condition, n_training_stimuli=80):
+    def __init__(self, condition, n_training_stimuli=160):
         self._assembly = load_assembly(condition)
         self._stimulus_set = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_test')
         self._fitting_stimuli = brainscore_vision.load_stimulus_set(f'VernierEngineering2024.{condition}_fit')
@@ -224,7 +224,7 @@ class _Malania2007Base(BenchmarkBase):
                                self.baseline_condition: self._baseline_stimulus_set}
 
         # reduce the fitting stimulus set to a random selection of 500 stimuli
-        n_training_stimuli = 80  # each block (expt. condition) for humans was 80 trials
+        n_training_stimuli = 160  # each block (expt. condition) for humans was 80 trials, and blocks were run twice
         print(
             f"NOTE: currently using a random selection of {n_training_stimuli}/{len(self._fitting_stimuli)} training stimuli")
         self._fitting_stimuli = self._fitting_stimuli.sample(n_training_stimuli)
